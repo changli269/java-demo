@@ -1,0 +1,93 @@
+name: java-demo-ci
+description: Build and test java-demo with Maven, produce coverage summary, and run PR coverage tracker
+inputs:
+  token:
+    description: GitHub token to authorize PR comment
+    required: true
+  java-version:
+    description: Java version to use
+    required: false
+    default: '17'
+  distribution:
+    description: JDK distribution
+    required: false
+    default: temurin
+  working-directory:
+    description: Path to the Maven project directory
+    required: false
+    default: java-demo
+
+runs:
+  using: composite
+  steps:
+    - name: Set up JDK
+      uses: actions/setup-java@v4
+      with:
+        distribution: ${{ inputs.distribution }}
+        java-version: ${{ inputs.java-version }}
+        cache: maven
+
+    - name: Build with Maven (tests + JaCoCo)
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      run: mvn -B -ntp clean verify
+
+    - name: Generate text-summary.txt from JaCoCo
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      run: |
+        python3 - << 'PY'
+        import xml.etree.ElementTree as ET
+        import os, sys
+        xml_path = os.path.join('target','site','jacoco','jacoco.xml')
+        out_dir = os.path.join('target','site','jacoco')
+        out_path = os.path.join(out_dir,'text-summary.txt')
+        if not os.path.exists(xml_path):
+          print(f"JaCoCo XML not found at {xml_path}", file=sys.stderr)
+          sys.exit(1)
+        os.makedirs(out_dir, exist_ok=True)
+        tree = ET.parse(xml_path)
+        root = tree.getroot()
+        totals = {}
+        # Aggregate top-level counters
+        for c in root.findall('counter'):
+          t = c.get('type')
+          missed = int(c.get('missed'))
+          covered = int(c.get('covered'))
+          totals[t] = (missed, covered)
+
+        def pct(covered, missed):
+          total = covered + missed
+          return 0.0 if total == 0 else 100.0 * covered / total
+
+        def fmt(label, miss_cov):
+          missed, covered = miss_cov
+          total = missed + covered
+          percent = pct(covered, missed)
+          return f"{label:<12}: {percent:.2f}% ( {covered}/{total} )"
+
+        # Map to Jest-like categories expected by pr-coverage-tracker
+        stmt_cov = totals.get('INSTRUCTION', (0, 0))  # "Statements"
+        branch_cov = totals.get('BRANCH', (0, 0))     # "Branches"
+        func_cov = totals.get('METHOD', (0, 0))       # "Functions"
+        line_cov = totals.get('LINE', (0, 0))         # "Lines"
+
+        lines = []
+        lines.append('='*31 + ' Coverage summary ' + '='*31)
+        lines.append(fmt('Statements', stmt_cov))
+        lines.append(fmt('Branches', branch_cov))
+        lines.append(fmt('Functions', func_cov))
+        lines.append(fmt('Lines', line_cov))
+        lines.append('='*78)
+
+        with open(out_path, 'w') as f:
+          f.write('\n'.join(lines))
+
+        print(f"Wrote {out_path}")
+        PY
+
+    - name: PR coverage tracker
+      uses: changli269/pr-coverage-tracker@v1
+      with:
+        token: ${{ inputs.token }}
+        coverage-path: ${{ inputs.working-directory }}/target/site/jacoco/text-summary.txt
