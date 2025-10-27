@@ -1,19 +1,10 @@
 name: java-demo-ci
 
 on:
+  pull_request:
+    branches:
+      - main
   workflow_dispatch:
-    inputs:
-      token:
-        description: GitHub token to authorize PR comment
-        required: true
-      java-version:
-        description: Java version to use
-        required: false
-        default: "17"
-      distribution:
-        description: JDK distribution
-        required: false
-        default: temurin
 
 jobs:
   build:
@@ -22,12 +13,15 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+          fetch-depth: 0
 
       - name: Set up JDK
         uses: actions/setup-java@v4
         with:
-          distribution: ${{ inputs.distribution }}
-          java-version: ${{ inputs.java-version }}
+          distribution: temurin
+          java-version: "17"
           cache: maven
 
       - name: Build with Maven (tests + JaCoCo)
