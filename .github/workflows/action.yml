@@ -5,18 +5,6 @@ on:
     branches:
       - main
   workflow_dispatch:
-    inputs:
-      token:
-        description: GitHub token to authorize PR comment
-        required: true
-      java-version:
-        description: Java version to use
-        required: false
-        default: "17"
-      distribution:
-        description: JDK distribution
-        required: false
-        default: temurin
 
 jobs:
   build:
@@ -29,8 +17,8 @@ jobs:
       - name: Set up JDK
         uses: actions/setup-java@v4
         with:
-          distribution: ${{ inputs.distribution }}
-          java-version: ${{ inputs.java-version }}
+          distribution: temurin
+          java-version: "17"
           cache: maven
 
       - name: Build with Maven (tests + JaCoCo)
@@ -104,5 +92,5 @@ jobs:
       - name: PR coverage tracker
         uses: changli269/pr-coverage-tracker@a247a2af67268428b50e2baca220c1f46a1c853d
         with:
-          token: ${{ inputs.token }}
+          token: ${{ secrets.GH_TOKEN }}
           coverage-path: target/site/jacoco/text-summary.txt
