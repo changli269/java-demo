@@ -93,7 +93,16 @@ jobs:
           fi
 
       - name: PR coverage tracker
-        uses: changli269/pr-coverage-tracker@a247a2af67268428b50e2baca220c1f46a1c853d
+        id: coverage
+        uses: changli269/pr-coverage-tracker@622d0279f3058020351ff21997a2674ee28d032a
         with:
           token: ${{ secrets.GH_TOKEN }}
           coverage-path: target/site/jacoco/text-summary.txt
+
+      - name: Write comment
+        # Do it only if there were changes in coverage
+        if: github.event_name == 'pull_request' && (steps.coverage.outputs.compared == 'true') && (steps.coverage.outputs.has-changed == 'true')
+        uses: peter-evans/create-or-update-comment@v3.0.1
+        with:
+          issue-number: ${{ github.event.number }}
+          body-path: ${{ steps.coverage.outputs.comment-file }}
