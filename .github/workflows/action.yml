@@ -94,7 +94,7 @@ jobs:
           PY
 
       - name: PR coverage tracker
-        uses: changli269/pr-coverage-tracker@v1
+        uses: changli269/pr-coverage-tracker@a247a2af67268428b50e2baca220c1f46a1c853d
         with:
           token: ${{ inputs.token }}
           coverage-path: ${{ inputs.working-directory }}/target/site/jacoco/text-summary.txt
