@@ -14,10 +14,6 @@ on:
         description: JDK distribution
         required: false
         default: temurin
-      working-directory:
-        description: Path to the Maven project directory
-        required: false
-        default: java-demo
 
 jobs:
   build:
@@ -41,7 +37,6 @@ jobs:
 
       - name: Generate text-summary.txt from JaCoCo
         shell: bash
-        working-directory: ${{ inputs.working-directory }}
         run: |
           python3 - << 'PY'
           import xml.etree.ElementTree as ET
