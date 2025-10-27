@@ -32,7 +32,6 @@ jobs:
 
       - name: Build with Maven (tests + JaCoCo)
         shell: bash
-        working-directory: ${{ inputs.working-directory }}
         run: mvn -B -ntp clean verify
 
       - name: Generate text-summary.txt from JaCoCo
@@ -86,10 +85,21 @@ jobs:
             f.write('\n'.join(lines))
 
           print(f"Wrote {out_path}")
+
+          # print contents to console as well
+          with open(out_path, 'r') as f:
+            print(f.read())
           PY
+
+      - name: Ensure baseline file exists
+        run: |
+          if [ ! -f "__prev-text-summary.txt" ]; then
+            echo "No previous baseline; creating empty __prev-text-summary.txt"
+            echo "" > __prev-text-summary.txt
+          fi
 
       - name: PR coverage tracker
         uses: changli269/pr-coverage-tracker@a247a2af67268428b50e2baca220c1f46a1c853d
         with:
           token: ${{ inputs.token }}
-          coverage-path: ${{ inputs.working-directory }}/target/site/jacoco/text-summary.txt
+          coverage-path: target/site/jacoco/text-summary.txt
