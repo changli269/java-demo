@@ -85,16 +85,16 @@ jobs:
             print(f.read())
           PY
 
-      - name: Ensure baseline file exists
-        run: |
-          if [ ! -f "__prev-text-summary.txt" ]; then
-            echo "No previous baseline; creating empty __prev-text-summary.txt"
-            echo "" > __prev-text-summary.txt
-          fi
+      # - name: Ensure baseline file exists
+      #   run: |
+      #     if [ ! -f "__prev-text-summary.txt" ]; then
+      #       echo "No previous baseline; creating empty __prev-text-summary.txt"
+      #       echo "" > __prev-text-summary.txt
+      #     fi
 
       - name: PR coverage tracker
         id: coverage
-        uses: changli269/pr-coverage-tracker@622d0279f3058020351ff21997a2674ee28d032a
+        uses: changli269/pr-coverage-tracker@ab96eaa88d72d1d138f272def31c98167691565a
         with:
           token: ${{ secrets.GH_TOKEN }}
           coverage-path: target/site/jacoco/text-summary.txt
