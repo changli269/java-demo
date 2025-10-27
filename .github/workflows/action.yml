@@ -100,7 +100,7 @@ jobs:
 
       - name: PR coverage tracker
         id: coverage
-        uses: changli269/pr-coverage-tracker@ab96eaa88d72d1d138f272def31c98167691565a
+        uses: changli269/pr-coverage-tracker@275c62c34080cf8bee939818ea951ee2d0972b0a
         with:
           token: ${{ secrets.GH_TOKEN }}
           coverage-path: target/site/jacoco/text-summary.txt
