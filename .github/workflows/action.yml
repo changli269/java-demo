@@ -85,16 +85,10 @@ jobs:
             print(f.read())
           PY
 
-      # - name: Ensure baseline file exists
-      #   run: |
-      #     if [ ! -f "__prev-text-summary.txt" ]; then
-      #       echo "No previous baseline; creating empty __prev-text-summary.txt"
-      #       echo "" > __prev-text-summary.txt
-      #     fi
 
       - name: PR coverage tracker
         id: coverage
-        uses: changli269/pr-coverage-tracker@064b40b07945aa9af232e23cf7b3e49b398eee6f
+        uses: changli269/pr-coverage-tracker@39b9e84c41856f3aed49473d5bc6bfb5d61f9879
         with:
           token: ${{ secrets.GH_TOKEN }}
           coverage-path: target/site/jacoco/text-summary.txt
@@ -102,7 +96,7 @@ jobs:
       - name: Write comment
         # Do it only if there were changes in coverage
         if: github.event_name == 'pull_request' && (steps.coverage.outputs.compared == 'true') && (steps.coverage.outputs.has-changed == 'true')
-        uses: peter-evans/create-or-update-comment@v3.0.1
+        uses: peter-evans/create-or-update-comment@v5
         with:
           issue-number: ${{ github.event.number }}
           body-path: ${{ steps.coverage.outputs.comment-file }}
