@@ -102,7 +102,7 @@ jobs:
       - name: Write comment
         # Do it only if there were changes in coverage
         if: github.event_name == 'pull_request' && (steps.coverage.outputs.compared == 'true') && (steps.coverage.outputs.has-changed == 'true')
-        uses: peter-evans/create-or-update-comment@v3.0.1
+        uses: peter-evans/create-or-update-comment@v5
         with:
           issue-number: ${{ github.event.number }}
           body-path: ${{ steps.coverage.outputs.comment-file }}
